@@ -145,13 +145,18 @@ window.onNativeUtteranceDone = window.onNativeUtteranceDone || function(){
     if (bookId.startsWith('book-archive-')) {
       try {
         let chapters = [];
-        try {
+        const meta = (state.manifest && (state.manifest.books||[]).find(b => b.id === bookId)) || {};
+        const bundles = (state.manifest && state.manifest.archive_bundles) || {};
+        const parts = (bundles[bookId] && bundles[bookId].parts) || meta.volume_parts || 1;
+        if (parts > 1) {
+          const loaded = [];
+          for (let i = 1; i <= parts; i++) {
+            loaded.push(await loadChunk(bookId + '-full-p' + i + '.json.gz'));
+          }
+          chapters = loaded.flatMap(x => x.chapters || []);
+        } else {
           const full = await loadChunk(bookId + '-full.json.gz');
           chapters = full.chapters || [];
-        } catch (_) {
-          const p1 = await loadChunk(bookId + '-full-p1.json.gz');
-          const p2 = await loadChunk(bookId + '-full-p2.json.gz');
-          chapters = [...(p1.chapters||[]), ...(p2.chapters||[])];
         }
         const byId = Object.fromEntries(chapters.map(c => [c.id, c]));
         state.book.chapters = state.book.chapters.map(ch => {
