@@ -1,0 +1,11 @@
+{
+  "headers": [
+    {"source": "/data/chunks/(.*).json.gz", "headers": [
+      {"key":"Content-Type","value":"application/gzip"},
+      {"key":"Cache-Control","value":"public, max-age=86400"}
+    ]},
+    {"source": "/data/(.*).json", "headers": [
+      {"key":"Cache-Control","value":"public, max-age=300"}
+    ]}
+  ]
+}
